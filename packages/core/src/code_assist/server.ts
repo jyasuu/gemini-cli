@@ -33,6 +33,39 @@ import {
 } from './converter.js';
 import { PassThrough } from 'node:stream';
 
+import fs from 'fs/promises';
+import path from 'path';
+
+class SimpleLogger {
+  private logFilePath: string;
+
+  constructor(logFileName: string = '/tmp/app.log') {
+    this.logFilePath = path.join(process.cwd(), logFileName);
+  }
+
+  async log(message: string): Promise<void> {
+    try {
+      const timestamp = new Date().toISOString();
+      const logMessage = `[${timestamp}] ${message}\n`;
+      await fs.appendFile(this.logFilePath, logMessage, 'utf8');
+    } catch (error) {
+      console.error('Logging failed:', error);
+    }
+  }
+}
+
+// Example usage
+(async () => {
+  const logger = new SimpleLogger();
+  
+  // Log some messages
+  await logger.log('Application started');
+  await logger.log('Performing important task');
+  await logger.log('Operation completed successfully');
+  
+  console.log('Logs written to current directory');
+})();
+
 /** HTTP options to be used in each of the requests. */
 export interface HttpOptions {
   /** Additional HTTP headers to be sent with the request. */
@@ -60,6 +93,11 @@ export class CodeAssistServer implements ContentGenerator {
     );
     return (async function* (): AsyncGenerator<GenerateContentResponse> {
       for await (const resp of resps) {
+        const logger = new SimpleLogger();
+  
+        await logger.log("========================================");
+        await logger.log(JSON.stringify(resp));
+        await logger.log("========================================");
         yield fromGenerateContentResponse(resp);
       }
     })();
@@ -128,6 +166,11 @@ export class CodeAssistServer implements ContentGenerator {
     req: object,
     signal?: AbortSignal,
   ): Promise<T> {
+    const logger = new SimpleLogger();
+
+    await logger.log("========================================");
+    await logger.log(JSON.stringify(req));
+    await logger.log("========================================");
     const res = await this.client.request({
       url: this.getMethodUrl(method),
       method: 'POST',
@@ -139,6 +182,11 @@ export class CodeAssistServer implements ContentGenerator {
       body: JSON.stringify(req),
       signal,
     });
+    
+
+    await logger.log("========================================");
+    await logger.log(JSON.stringify(res));
+    await logger.log("========================================");
     return res.data as T;
   }
 
@@ -161,6 +209,11 @@ export class CodeAssistServer implements ContentGenerator {
     req: object,
     signal?: AbortSignal,
   ): Promise<AsyncGenerator<T>> {
+    const logger = new SimpleLogger();
+
+    await logger.log("========================================");
+    await logger.log(JSON.stringify(req));
+    await logger.log("========================================");
     const res = await this.client.request({
       url: this.getMethodUrl(method),
       method: 'POST',

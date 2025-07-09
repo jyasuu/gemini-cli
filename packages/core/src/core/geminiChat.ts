@@ -33,6 +33,28 @@ import {
 } from '../telemetry/types.js';
 import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
 
+import fs from 'fs/promises';
+import path from 'path';
+
+class SimpleLogger {
+  private logFilePath: string;
+
+  constructor(logFileName: string = '/tmp/app.log') {
+    this.logFilePath = path.join(process.cwd(), logFileName);
+  }
+
+  async log(message: string): Promise<void> {
+    try {
+      const timestamp = new Date().toISOString();
+      const logMessage = `[${timestamp}] ${message}\n`;
+      await fs.appendFile(this.logFilePath, logMessage, 'utf8');
+    } catch (error) {
+      console.error('Logging failed:', error);
+    }
+  }
+}
+
+
 /**
  * Returns true if the response is valid, false otherwise.
  */
@@ -146,6 +168,11 @@ export class GeminiChat {
     model: string,
     prompt_id: string,
   ): Promise<void> {
+    const logger = new SimpleLogger();
+
+    await logger.log("========================================");
+    await logger.log(JSON.stringify(contents));
+    await logger.log("========================================");
     const requestText = this._getRequestTextFromContents(contents);
     logApiRequest(
       this.config,
@@ -159,6 +186,11 @@ export class GeminiChat {
     usageMetadata?: GenerateContentResponseUsageMetadata,
     responseText?: string,
   ): Promise<void> {
+    const logger = new SimpleLogger();
+
+    await logger.log("========================================");
+    await logger.log(JSON.stringify(responseText));
+    await logger.log("========================================");
     logApiResponse(
       this.config,
       new ApiResponseEvent(
@@ -272,6 +304,12 @@ export class GeminiChat {
 
     const startTime = Date.now();
     let response: GenerateContentResponse;
+    
+    const logger = new SimpleLogger();
+
+    await logger.log("========================================");
+    await logger.log(JSON.stringify(requestContents));
+    await logger.log("========================================");
 
     try {
       const apiCall = () => {

@@ -19,6 +19,27 @@ import { Config } from '../config/config.js';
 import { getEffectiveModel } from './modelCheck.js';
 import { UserTierId } from '../code_assist/types.js';
 
+import fs from 'fs/promises';
+import path from 'path';
+class SimpleLogger {
+  private logFilePath: string;
+
+  constructor(logFileName: string = '/tmp/app.log') {
+    this.logFilePath = path.join(process.cwd(), logFileName);
+  }
+
+  async log(message: string): Promise<void> {
+    try {
+      const timestamp = new Date().toISOString();
+      const logMessage = `[${timestamp}] ${message}\n`;
+      await fs.appendFile(this.logFilePath, logMessage, 'utf8');
+    } catch (error) {
+      console.error('Logging failed:', error);
+    }
+  }
+}
+
+
 /**
  * Interface abstracting the core functionalities for generating content and counting tokens.
  */
@@ -119,7 +140,13 @@ export async function createContentGenerator(
     config.authType === AuthType.LOGIN_WITH_GOOGLE ||
     config.authType === AuthType.CLOUD_SHELL
   ) {
-    return createCodeAssistContentGenerator(
+    
+      const logger = new SimpleLogger();
+      await logger.log("========================================");
+      await logger.log("==========createContentGenerator========");
+      await logger.log("===createCodeAssistContentGenerator=====");
+      await logger.log("========================================");
+      return createCodeAssistContentGenerator(
       httpOptions,
       config.authType,
       gcConfig,
@@ -137,6 +164,11 @@ export async function createContentGenerator(
       httpOptions,
     });
 
+    const logger = new SimpleLogger();
+    await logger.log("========================================");
+    await logger.log("==========createContentGenerator========");
+    await logger.log("===============GoogleGenAI==============");
+    await logger.log("========================================");
     return googleGenAI.models;
   }
 

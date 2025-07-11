@@ -97,6 +97,7 @@ export class CodeAssistServer implements ContentGenerator {
         const logger = new SimpleLogger();
   
         await logger.log("========================================");
+        await logger.log("==========generateContentStream=========");
         await logger.log(JSON.stringify(resp));
         await logger.log("========================================");
         yield fromGenerateContentResponse(resp);
@@ -170,6 +171,8 @@ export class CodeAssistServer implements ContentGenerator {
     const logger = new SimpleLogger();
 
     await logger.log("========================================");
+    await logger.log("==============requestPost===============");
+    await logger.log(this.getMethodUrl(method));
     await logger.log(JSON.stringify(req));
     await logger.log("========================================");
     const res = await this.client.request({
@@ -186,6 +189,7 @@ export class CodeAssistServer implements ContentGenerator {
     
 
     await logger.log("========================================");
+    await logger.log("==============requestPost===============");
     await logger.log(JSON.stringify(res));
     await logger.log("========================================");
     return res.data as T;
@@ -213,6 +217,7 @@ export class CodeAssistServer implements ContentGenerator {
     const logger = new SimpleLogger();
 
     await logger.log("========================================");
+    await logger.log("============requestStreamingPost========");
     await logger.log(JSON.stringify(req));
     await logger.log("========================================");
     const res = await this.client.request({

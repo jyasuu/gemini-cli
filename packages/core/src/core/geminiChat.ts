@@ -177,6 +177,7 @@ export class GeminiChat {
     const logger = new SimpleLogger();
 
     await logger.log("========================================");
+    await logger.log("===========_logApiRequest===============");
     await logger.log(JSON.stringify(contents));
     await logger.log("========================================");
     const requestText = this._getRequestTextFromContents(contents);
@@ -191,6 +192,7 @@ export class GeminiChat {
     const logger = new SimpleLogger();
 
     await logger.log("========================================");
+    await logger.log("============_logApiResponse=============");
     await logger.log(JSON.stringify(responseText));
     await logger.log("========================================");
     logApiResponse(
@@ -289,7 +291,12 @@ export class GeminiChat {
     const logger = new SimpleLogger();
 
     await logger.log("========================================");
-    await logger.log(JSON.stringify(requestContents));
+    await logger.log("=============sendMessage================");
+    await logger.log(JSON.stringify({
+          model: this.config.getModel() || DEFAULT_GEMINI_FLASH_MODEL,
+          contents: requestContents,
+          config: { ...this.generationConfig, ...params.config },
+        }));
     await logger.log("========================================");
 
     try {
@@ -383,8 +390,19 @@ export class GeminiChat {
     this._logApiRequest(requestContents, this.config.getModel());
 
     const startTime = Date.now();
+    const logger = new SimpleLogger();
+
+    await logger.log("========================================");
+    await logger.log("=============sendMessage================");
+    await logger.log(JSON.stringify({
+          model: this.config.getModel(),
+          contents: requestContents,
+          config: { ...this.generationConfig, ...params.config },
+        }));
+    await logger.log("========================================");
 
     try {
+      
       const apiCall = () =>
         this.contentGenerator.generateContentStream({
           model: this.config.getModel(),
